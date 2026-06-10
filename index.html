@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Kaju Bakery — Ticket Printer</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Dancing+Script:wght@700&family=Lato:wght@400;700;900&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red:    #8B2500;
+  --bg:     #f5ede6;
+  --card:   #ffffff;
+  --border: #e5d5c8;
+  --muted:  #9a7060;
+  --text:   #1e0e06;
+}
+
+body { font-family: 'Lato', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.app { max-width: 540px; margin: 0 auto; padding-bottom: 90px; }
+
+/* Header */
+.header {
+  background: var(--red); padding: 14px 18px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; z-index: 200;
+}
+.header-brand { font-family: 'Dancing Script', cursive; font-size: 24px; font-weight: 700; color: #fff; }
+.header-sub { font-family: 'Archivo Black', sans-serif; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-top: 2px; }
+.header-right { font-size: 10px; color: rgba(255,255,255,0.55); text-align: right; line-height: 1.6; }
+
+/* Cards */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; margin: 14px 16px; padding: 16px; box-shadow: 0 2px 16px rgba(139,37,0,0.07); }
+.card-title { font-family: 'Archivo Black', sans-serif; font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.card-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* Fields */
+.field { margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+.field-label { font-family: 'Archivo Black', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; display: block; }
+.field input { width: 100%; background: #faf5fd; border: 1.5px solid var(--border); border-radius: 8px; padding: 11px 13px; font-family: 'Archivo Black', sans-serif; font-size: 14px; color: var(--text); transition: border-color 0.15s, box-shadow 0.15s; -webkit-appearance: none; }
+.field input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px rgba(139,37,0,0.09); background: #fff; }
+.field input::placeholder { color: #c5ad9e; font-size: 12px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+.today-btn { background: transparent; border: 1.5px solid var(--border); border-radius: 7px; padding: 7px 13px; font-family: 'Archivo Black', sans-serif; font-size: 10px; letter-spacing: 0.5px; color: var(--muted); cursor: pointer; margin-top: 6px; transition: border-color 0.15s, color 0.15s; }
+.today-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* Slider */
+.slider-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.slider-row input[type="range"] { flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px; outline: none; cursor: pointer; }
+.slider-row input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--red); box-shadow: 0 1px 4px rgba(139,37,0,0.35); cursor: pointer; transition: transform 0.1s; }
+.slider-row input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.2); }
+.slider-row input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--red); border: none; cursor: pointer; }
+.slider-value { font-family: 'Archivo Black', sans-serif; font-size: 13px; color: var(--red); min-width: 34px; text-align: right; }
+
+/* Layout selector */
+.layout-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+.layout-option { border: 2px solid var(--border); border-radius: 10px; padding: 12px 10px; cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s; background: #faf5fd; }
+.layout-option:hover { border-color: var(--red); }
+.layout-option.active { border-color: var(--red); background: #fdf3ee; }
+.layout-option-icon { font-size: 22px; margin-bottom: 6px; line-height: 1; }
+.layout-option-title { font-family: 'Archivo Black', sans-serif; font-size: 11px; letter-spacing: 0.5px; color: var(--text); margin-bottom: 3px; }
+.layout-option-desc { font-size: 10px; color: var(--muted); line-height: 1.4; }
+
+/* Stepper */
+.stepper { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 20px; }
+.step-btn { width: 46px; height: 46px; border-radius: 50%; background: var(--red); color: #fff; border: none; font-size: 26px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s; }
+.step-btn:active { transform: scale(0.92); }
+.step-count { font-family: 'Archivo Black', sans-serif; font-size: 40px; color: var(--red); min-width: 60px; text-align: center; }
+.step-sublabel { font-family: 'Archivo Black', sans-serif; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); text-align: center; margin-top: 3px; }
+.layout-note { margin-top: 10px; background: #fdf3ee; border: 1px solid #f0ddd3; border-radius: 8px; padding: 9px 13px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.layout-dot { width:7px; height:7px; border-radius:50%; background:var(--red); flex-shrink:0; }
+
+/* Ticket wrapper */
+.ticket-wrapper { position: relative; width: 500px; height: 250px; flex-shrink: 0; }
+.ticket-wrapper img.ticket-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; pointer-events: none; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
+
+/* Overlays */
+.ov { position: absolute; font-family: 'Archivo Black', sans-serif; white-space: nowrap; line-height: 1; transform: translate(-50%, -50%); pointer-events: none; }
+.ov-product { left: 24%; top: 50%; color: #99341b; letter-spacing: 0.8px; text-transform: uppercase; max-width: 38%; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+.ov-price   { left: 57.0%; top: 50.3%; color: #000000; font-size: 26px; }
+.ov-year    { left: 82.6%; top: 25.0%; color: #ffffff; font-size: 14px; transform: rotate(-90deg); }
+.ov-month   { left: 82.6%; top: 45.5%; color: #ffffff; font-size: 14px; transform: rotate(-90deg); }
+.ov-date    { left: 82.6%; top: 65.8%; color: #ffffff; font-size: 14px; transform: rotate(-90deg); }
+.ov-duration{ left: 89.1%; top: 42.0%; color: #99341b; font-size: 10px; transform: rotate(-90deg); }
+
+/* Preview */
+.preview-area { background: #e8ddd5; border: 1px solid var(--border); border-radius: 10px; padding: 16px 8px; display: flex; justify-content: center; align-items: center; overflow-x: auto; min-height: 200px; }
+
+/* Footer */
+.footer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--red); padding: 12px 16px; display: flex; gap: 10px; justify-content: center; z-index: 200; }
+.btn-print { flex: 1; max-width: 380px; background: #fff; color: var(--red); border: none; border-radius: 10px; padding: 14px; font-family: 'Archivo Black', sans-serif; font-size: 14px; letter-spacing: 0.5px; cursor: pointer; transition: transform 0.1s; }
+.btn-print:active { transform: scale(0.98); }
+.btn-clear { background: rgba(255,255,255,0.15); color: #fff; border: 1.5px solid rgba(255,255,255,0.35); border-radius: 10px; padding: 14px 18px; font-family: 'Archivo Black', sans-serif; font-size: 13px; cursor: pointer; transition: background 0.15s; }
+.btn-clear:hover { background: rgba(255,255,255,0.25); }
+
+/* Ticket Colour Picker */
+.ticket-color-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.ticket-color-swatch {
+  width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+  border: 3px solid transparent; transition: transform 0.15s, border-color 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+}
+.ticket-color-swatch:hover { transform: scale(1.13); }
+.ticket-color-swatch.active { border-color: #222; transform: scale(1.13); }
+.ticket-custom-row { display: flex; align-items: center; gap: 10px; }
+.ticket-custom-row label { font-family: 'Archivo Black', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.ticket-custom-row input[type="color"] { width: 44px; height: 36px; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; padding: 2px 3px; background: #fff; }
+
+/* ══════════════════════════════════════════
+   PRINT
+   Standard : 2 cols × 6 rows = 12/A4  — 95mm × 47.5mm
+   Compact  : 3 cols × 5 rows = 15/A4  — 62mm × 35mm
+   .ov-product font-size always set inline by JS (scaled per layout).
+══════════════════════════════════════════ */
+@media screen { .print-sheet { display: none; } }
+
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; width: 210mm; }
+  .no-print { display: none !important; }
+
+  .print-sheet { display: block !important; width: 210mm; padding: 0; }
+  .print-grid  { display: flex; flex-wrap: wrap; gap: 4mm; align-content: flex-start; justify-content: flex-start; }
+
+  .print-ticket-wrap { position: relative; overflow: hidden; page-break-inside: avoid; flex-shrink: 0; }
+  .print-ticket-wrap img.ticket-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* Standard: 95 × 47.5 mm */
+  .layout-standard .print-ticket-wrap              { width: 95mm; height: 47.5mm; }
+  .layout-standard .print-ticket-wrap .ov-year     { font-size: 2.4mm; }
+  .layout-standard .print-ticket-wrap .ov-month    { font-size: 2.4mm; }
+  .layout-standard .print-ticket-wrap .ov-date     { font-size: 2.4mm; }
+  .layout-standard .print-ticket-wrap .ov-duration { font-size: 1.9mm; }
+  /* ov-price & ov-product set inline by JS for standard */
+
+  /* Compact: 62 × 35 mm */
+  .layout-compact .print-ticket-wrap              { width: 62mm; height: 35mm; }
+  .layout-compact .print-ticket-wrap .ov-year     { font-size: 1.8mm; }
+  .layout-compact .print-ticket-wrap .ov-month    { font-size: 1.8mm; }
+  .layout-compact .print-ticket-wrap .ov-date     { font-size: 1.8mm; }
+  .layout-compact .print-ticket-wrap .ov-duration { font-size: 1.0mm; }
+  .layout-compact .print-ticket-wrap .ov-price    { font-size: 4.5mm; }
+  /* ov-product set inline by JS for compact */
+}
+</style>
+</head>
+<body>
+
+<div class="app no-print">
+
+  <div class="header">
+    <div>
+      <div class="header-brand">Kaju Bakery</div>
+      <div class="header-sub">Ticket Printer</div>
+    </div>
+    <div class="header-right">Developed & Design by<br/><span><b>Prashad Nath</b></span></div>
+  </div>
+
+  <!-- Live preview -->
+  <div class="card">
+    <div class="card-title">Live Preview</div>
+    <div class="preview-area">
+      <div class="ticket-wrapper" id="preview-ticket">
+        <img class="ticket-bg" src="Price Ticket.png" alt="Kaju Bakery ticket template"/>
+        <span class="ov ov-product"  id="prev-product"></span>
+        <span class="ov ov-price"    id="prev-price"></span>
+        <span class="ov ov-year"     id="prev-year"></span>
+        <span class="ov ov-month"    id="prev-month"></span>
+        <span class="ov ov-date"     id="prev-date"></span>
+        <span class="ov ov-duration" id="prev-duration"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product & Price -->
+  <div class="card">
+    <div class="card-title">Product Details</div>
+    <div class="field">
+      <label class="field-label">Product Name</label>
+      <input type="text" id="f-product" placeholder="e.g. Bread, Biscuit, Ladoo…" oninput="liveUpdate()">
+    </div>
+    <div class="field">
+      <label class="field-label">Product Font Size</label>
+      <div class="slider-row">
+        <span style="font-family:'Lato',sans-serif;font-size:11px;color:var(--muted);white-space:nowrap">A</span>
+        <input type="range" id="font-slider" min="10" max="50" value="35" step="1" oninput="onSliderChange(this)">
+        <span style="font-family:'Lato',sans-serif;font-size:16px;color:var(--muted);white-space:nowrap">A</span>
+        <span class="slider-value" id="slider-val">35px</span>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Price (₹)</label>
+      <input type="number" id="f-price" placeholder="e.g. ₹" oninput="liveUpdate()">
+    </div>
+  </div>
+
+  <!-- Ticket Colour -->
+  <div class="card">
+    <div class="card-title">Ticket Colour</div>
+    <div class="ticket-color-grid" id="ticket-color-grid"></div>
+    <div class="ticket-custom-row">
+      <label>Custom</label>
+      <input type="color" id="ticket-color-picker" value="#8B2500" oninput="applyTicketColor(this.value, -1)">
+    </div>
+  </div>
+
+  <!-- Manufacturing Date -->
+  <div class="card">
+    <div class="card-title">Manufacturing Date</div>
+    <div class="row3">
+      <div class="field">
+        <label class="field-label">Date</label>
+        <input type="number" id="f-day" placeholder="DD" min="1" max="31" oninput="liveUpdate()">
+      </div>
+      <div class="field">
+        <label class="field-label">Month</label>
+        <input type="number" id="f-month" placeholder="MM" min="1" max="12" oninput="liveUpdate()">
+      </div>
+      <div class="field">
+        <label class="field-label">Year</label>
+        <input type="number" id="f-year" placeholder="YY" min="24" max="99" oninput="liveUpdate()">
+      </div>
+    </div>
+    <button class="today-btn" onclick="setToday()">📅 Use today's date</button>
+    <button class="today-btn" onclick="setTomorrow()"> 📅 Use tomorrow's date </button>
+    <div class="field" style="margin-top:12px">
+      <label class="field-label">Expiry Days</label>
+      <input type="number" id="f-duration" placeholder="e.g. 7" min="1" max="999" oninput="liveUpdate()">
+    </div>
+  </div>
+
+  <!-- Print Layout -->
+  <div class="card">
+    <div class="card-title">Print Layout</div>
+    <div class="layout-selector">
+      <div class="layout-option" id="opt-standard" onclick="setLayout('standard')">
+        <div class="layout-option-icon">🥮</div>
+        <div class="layout-option-title">Normal</div>
+        <div class="layout-option-desc"><br/>12 tickets per A4<br/></div>
+      </div>
+      <div class="layout-option active" id="opt-compact" onclick="setLayout('compact')">
+        <div class="layout-option-icon">🤏🏻</div>
+        <div class="layout-option-title">Small Size</div>
+        <div class="layout-option-desc"><br/>21 tickets per A4<br/></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Number of Tickets -->
+  <div class="card">
+    <div class="card-title">Number of Tickets</div>
+    <div class="stepper">
+      <button class="step-btn" onclick="adj(-1)">−</button>
+      <div>
+        <div class="step-count" id="copies-display">15</div>
+        <div class="step-sublabel">tickets</div>
+      </div>
+      <button class="step-btn" onclick="adj(1)">+</button>
+    </div>
+    <div class="layout-note">
+      <div class="layout-dot"></div>
+      <span id="layout-note-text"></span>
+    </div>
+  </div>
+
+</div><!-- /.app -->
+
+<div class="footer-bar no-print">
+  <button class="btn-clear" onclick="clearAll()">Clear</button>
+  <button class="btn-print" onclick="doPrint()">
+    🖨&nbsp; Print <span id="footer-n"></span> Ticket<span id="footer-s">s</span> on A4
+  </button>
+</div>
+
+<div class="print-sheet layout-compact" id="print-sheet">
+  <div class="print-grid" id="print-grid"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const val = id => ($( id )?.value || '').trim();
+const pad2 = n => String(n).padStart(2, '0');
+
+/*
+  Layout configs:
+    printScale = (ticket_width_mm × 3.7795px/mm) / 500px_screen
+    Standard: 95mm → 358.55px / 500 ≈ 0.7171
+    Compact:  62mm → 234.3px  / 500 ≈ 0.4686
+*/ 
+const LAYOUTS = {
+  standard: { cols: 2, perPage: 12, minCopies: 1,  maxCopies: 100, printScale: 358.55 / 500, printClass: 'layout-standard' },
+  compact:  { cols: 3, perPage: 22, minCopies: 21, maxCopies: 21, printScale: 234.3  / 500, printClass: 'layout-compact'  },
+};
+
+let activeLayout  = 'compact';
+let copies        = 1;
+let productFontPx = 35;
+
+/* ── Layout switcher ── */
+function setLayout(name) {
+  activeLayout = name;
+  $('opt-standard').classList.toggle('active', name === 'standard');
+  $('opt-compact').classList.toggle('active',  name === 'compact');
+  const sheet = $('print-sheet');
+  sheet.classList.remove('layout-standard', 'layout-compact');
+  sheet.classList.add(LAYOUTS[name].printClass);
+  const cfg = LAYOUTS[name];
+  copies = Math.max(cfg.minCopies, Math.min(cfg.maxCopies, copies));
+  updateStepperUI();
+}
+
+/* ── Slider ── */
+function onSliderChange(el) {
+  productFontPx = parseInt(el.value, 10);
+  const pct = ((productFontPx - 10) / (50 - 10)) * 100;
+  el.style.background = `linear-gradient(to right, var(--red) ${pct}%, var(--border) ${pct}%)`;
+  $('slider-val').textContent = productFontPx + 'px';
+  liveUpdate();
+}
+(function initSlider() {
+  const el = $('font-slider');
+  const pct = ((35 - 10) / (50 - 10)) * 100;
+  el.style.background = `linear-gradient(to right, var(--red) ${pct}%, var(--border) ${pct}%)`;
+}());
+
+/* ── Data ── */
+function getData() {
+  return {
+    product  : val('f-product'),
+    price    : val('f-price') ? '₹ ' + val('f-price') : '',
+    day      : val('f-day')      ? pad2(val('f-day'))   : '',
+    month    : val('f-month')    ? pad2(val('f-month')) : '',
+    year     : val('f-year')     ? val('f-year')        : '',
+    duration : val('f-duration') ? val('f-duration')    : '',
+  };
+}
+
+/* ── Live preview ── */
+function liveUpdate() {
+  const d = getData();
+  const prodEl = $('prev-product');
+  prodEl.textContent    = d.product;
+  prodEl.style.fontSize = productFontPx + 'px';
+  $('prev-price').textContent    = d.price;
+  $('prev-year').textContent     = d.year;
+  $('prev-month').textContent    = d.month;
+  $('prev-date').textContent     = d.day;
+  $('prev-duration').textContent = d.duration;
+}
+
+/* ── Stepper ── */
+function adj(delta) {
+  const cfg = LAYOUTS[activeLayout];
+  copies = Math.max(cfg.minCopies, Math.min(cfg.maxCopies, copies + delta));
+  updateStepperUI();
+}
+function updateStepperUI() {
+  const cfg    = LAYOUTS[activeLayout];
+  const rows   = Math.ceil(copies / cfg.cols);
+  const sheets = Math.ceil(copies / cfg.perPage);
+  $('copies-display').textContent = copies;
+  $('footer-n').textContent       = copies;
+  $('footer-s').textContent       = copies !== 1 ? 's' : '';
+  $('layout-note-text').textContent =
+    `${copies} ticket${copies !== 1 ? 's' : ''} — ` +
+    `${rows} row${rows !== 1 ? 's' : ''} of ${cfg.cols} — ` +
+    `${sheets} A4 sheet${sheets !== 1 ? 's' : ''} (${cfg.perPage} per sheet)`;
+}
+
+/* ── Today ── */
+function setToday() {
+  const n = new Date();
+  $('f-day').value   = n.getDate();
+  $('f-month').value = n.getMonth() + 1;
+  $('f-year').value  = String(n.getFullYear()).slice(-2);
+  liveUpdate();
+}
+
+/* ── Tomorrow ── */
+function setTomorrow() {
+  const n = new Date();
+  n.setDate(n.getDate() + 1); // add 1 day
+
+  $('f-day').value   = n.getDate();
+  $('f-month').value = n.getMonth() + 1;
+  $('f-year').value  = String(n.getFullYear()).slice(-2);
+
+  liveUpdate();
+}
+
+/* ── Clear ── */
+function clearAll() {
+  ['f-product','f-price','f-day','f-month','f-year','f-duration']
+    .forEach(id => { $(id).value = ''; });
+  liveUpdate();
+}
+
+/* ── HTML escape ── */
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── Build one print ticket ──
+   - ov-product font-size always set inline, scaled by layout's printScale.
+   - Standard layout: ov-price also scaled inline (original behaviour).
+   - Compact layout:  ov-price handled by CSS (4.5mm).
+*/
+function buildPrintTicket(d) {
+  const cfg         = LAYOUTS[activeLayout];
+  const printFontPx = (productFontPx * cfg.printScale).toFixed(2);
+  const priceStyle  = activeLayout === 'standard'
+    ? `style="font-size:${(26 * cfg.printScale).toFixed(2)}px"` : '';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'print-ticket-wrap';
+  wrap.innerHTML = `
+    <img class="ticket-bg" src="Price Ticket.png" alt="Price Ticket" style="${window._ticketFilter ? 'filter:'+window._ticketFilter : ''}"/>
+    <span class="ov ov-product"  style="font-size:${printFontPx}px;color:${window._ticketColor||'var(--red)'}">${esc(d.product)}</span>
+    <span class="ov ov-price" ${priceStyle}>${esc(d.price)}</span>
+    <span class="ov ov-year">${esc(d.year)}</span>
+    <span class="ov ov-month">${esc(d.month)}</span>
+    <span class="ov ov-date">${esc(d.day)}</span>
+    <span class="ov ov-duration">${esc(d.duration)}</span>
+  `;
+  return wrap;
+}
+
+/* ── Print ── */
+function doPrint() {
+  const d    = getData();
+  const grid = $('print-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < copies; i++) grid.appendChild(buildPrintTicket(d));
+  setTimeout(() => window.print(), 350);
+}
+
+/* ── Ticket Colour ── */
+// Original ticket hue is ~8° (dark red). We rotate relative to that.
+const TICKET_BASE_HUE = 8;
+
+const TICKET_COLORS = [
+  { name: 'Original Red',  hex: '#8B2500' },
+  { name: 'Royal Blue',    hex: '#0d2e8f' },
+  { name: 'Forest Green',  hex: '#1b5e20' },
+  { name: 'Deep Purple',   hex: '#4a148c' },
+  { name: 'Teal',          hex: '#00695c' },
+  { name: 'Hot Pink',      hex: '#880e4f' },
+  { name: '',     hex: '#FF5722' },
+  { name: 'Charcoal',      hex: '#263238' },
+  { name: '',      hex: '#FFF9D2' },
+
+];
+
+let activeTicketSwatch = 0;
+
+function hexToHue(hex) {
+  let r = parseInt(hex.slice(1,3),16)/255;
+  let g = parseInt(hex.slice(3,5),16)/255;
+  let b = parseInt(hex.slice(5,7),16)/255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h = 0;
+  if (max !== min) {
+    const d = max - min;
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / d + 2) / 6;
+    else h = ((r - g) / d + 4) / 6;
+  }
+  return Math.round(h * 360);
+}
+
+function applyTicketColor(hex, swatchIdx) {
+  const targetHue  = hexToHue(hex);
+  const rotate     = targetHue - TICKET_BASE_HUE;
+  // Desaturate charcoal/dark tones; keep saturation for vivid colours
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  const maxC = Math.max(r,g,b), minC = Math.min(r,g,b);
+  const sat = maxC === 0 ? 0 : (maxC - minC) / maxC;
+  const satFilter = sat < 0.15 ? 'saturate(0.3) brightness(0.55)' : 'saturate(1.2)';
+  const filterVal = `hue-rotate(${rotate}deg) ${satFilter}`;
+
+  // Apply to ALL ticket images (preview + print)
+  document.querySelectorAll('img.ticket-bg').forEach(img => {
+    img.style.filter = filterVal;
+  });
+  // Store for newly created print tickets
+  window._ticketFilter = filterVal;
+  window._ticketColor  = hex;
+
+  // Update product name overlay color to match ticket
+  document.querySelectorAll('.ov-product').forEach(el => el.style.color = hex);
+
+  // Sync color picker
+  $('ticket-color-picker').value = hex;
+
+  // Update active swatch
+  activeTicketSwatch = swatchIdx;
+  document.querySelectorAll('.ticket-color-swatch').forEach((el, i) => {
+    el.classList.toggle('active', i === swatchIdx);
+  });
+}
+
+(function buildTicketSwatches() {
+  const grid = $('ticket-color-grid');
+  TICKET_COLORS.forEach((c, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'ticket-color-swatch' + (i === 0 ? ' active' : '');
+    sw.style.background = c.hex;
+    sw.title = c.name;
+    sw.onclick = () => applyTicketColor(c.hex, i);
+    grid.appendChild(sw);
+  });
+}());
+
+/* ── Init ── */
+liveUpdate();
+updateStepperUI();
+</script>
+</body>
+</html>

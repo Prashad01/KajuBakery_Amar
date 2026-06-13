@@ -164,7 +164,7 @@ body { font-family: 'Lato', sans-serif; background: var(--bg); color: var(--text
     <div class="card-title">Live Preview</div>
     <div class="preview-area">
       <div class="ticket-wrapper" id="preview-ticket">
-        <img class="ticket-bg" src="Price Ticket.png" alt="Kaju Bakery ticket template"/>
+        <img class="ticket-bg" src="Price Ticket2.jpg" alt="Kaju Bakery ticket template"/>
         <span class="ov ov-product"  id="prev-product"></span>
         <span class="ov ov-price"    id="prev-price"></span>
         <span class="ov ov-year"     id="prev-year"></span>
@@ -417,7 +417,7 @@ function buildPrintTicket(d) {
   const wrap = document.createElement('div');
   wrap.className = 'print-ticket-wrap';
   wrap.innerHTML = `
-    <img class="ticket-bg" src="Price Ticket.png" alt="Price Ticket" style="${window._ticketFilter ? 'filter:'+window._ticketFilter : ''}"/>
+    <img class="ticket-bg" src="Price Ticket2.jpg" alt="Price Ticket" style="${window._ticketFilter ? 'filter:'+window._ticketFilter : ''}"/>
     <span class="ov ov-product"  style="font-size:${printFontPx}px;color:${window._ticketColor||'var(--red)'}">${esc(d.product)}</span>
     <span class="ov ov-price" ${priceStyle}>${esc(d.price)}</span>
     <span class="ov ov-year">${esc(d.year)}</span>
